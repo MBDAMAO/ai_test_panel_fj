@@ -69,7 +69,6 @@ function clearTable() {
   tableData.value = []
 }
 function download() {
-  console.log(nps, nps[0], nps[1], inp3.value)
   if (!(nps && nps[0] && nps[1] && inp3.value != null)) {
     ElMessage({
       showClose: true,
@@ -121,7 +120,7 @@ let dialogTableVisible = ref(false)
 let loading = ref(false)
 function evaluteData() {
   let data = tableData.value;
-  if (inp2.value != null) {
+  if (inp2.value != null && inp2.value != "") {
     try {
       data = JSON.parse(inp2.value)
     } catch (errors) {
@@ -203,7 +202,6 @@ function evaluteData() {
 onMounted(() => {
   var hiddenFileInput = document.getElementById('hiddenFileInput');
   hiddenFileInput?.addEventListener('change', function (event) {
-    console.log("upload")
     var file = event.target.files[0];
     if (file) {
       if (file.type.match('application/json')) {
@@ -214,7 +212,6 @@ onMounted(() => {
           jsonFile.forEach(element => {
             generateData.push({ task_id: element.task_id, prompt: JSON.stringify(element.result) })
           })
-          console.log('解析后的JSON对象:', jsonFile);
           if (jsonFile instanceof Array) {
             let flag = true;
             jsonFile.forEach((element) => {
