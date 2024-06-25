@@ -7,8 +7,8 @@
           <el-cascader :options="options" style="width: 100%;" v-model="nps" filterable />
         </div>
         <div class="param">
-          <el-input v-model="inp2" style="width: 100%" :autosize="{ minRows: 2, maxRows: 4 }" type="textarea"
-            placeholder="Please input" />
+          <el-input v-model="inp2" style="width: 100%" :autosize="{ minRows: 2, maxRows: 2 }" type="textarea"
+            placeholder="Please enter generateData when about to evaluate." />
         </div>
         <div class="param">
           <div class="download" @click="download()">Search</div>
@@ -24,7 +24,7 @@
       <el-table :data="tableData" border stripe style="width: 100%; height: 100%;">
         <el-table-column prop="task_id" label="Task_id" width="180" />
         <el-table-column prop="entry_point" label="Entry_point" width="180" />
-        <el-table-column prop="prompt" label="Prompt" />
+        <el-table-column prop="prompt" label="Prompt/Result" />
       </el-table>
     </div>
     <div class="borderBox"></div>
@@ -82,7 +82,7 @@ function exportData() {
       type: "error",
     }); return;
   }
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
   var downloadAnchor = document.createElement('a');
   downloadAnchor.href = dataStr;
   downloadAnchor.download = `dataset.json`;
@@ -92,6 +92,23 @@ function exportData() {
 }
 function evaluteData() {
   let data = tableData.value;
+  if (inp2.value != null) {
+    try {
+      data = JSON.parse(inp2.value)
+    } catch (errors) {
+      ElMessage({
+        showClose: true,
+        message: "JSON格式解析失败，请输入JSON数据！",
+        type: "error",
+      });
+      return;
+    }
+    ElMessage({
+      showClose: true,
+      message: "检测到输入，优先使用输入数据",
+      type: "success",
+    });
+  }
   if (!(nps && nps[0] && nps[1] && inp3.value != null) || (!data || data.length == 0 || JSON.stringify(data) == "{}")) {
     ElMessage({
       showClose: true,
@@ -100,22 +117,55 @@ function evaluteData() {
     });
     return;
   }
-  let gengerateData: any = [];
+  let generateData: any = [];
+  let f = true;
+  if ((data instanceof Array)) {
+    data.forEach(element => {
+      if (!('result' in data || 'prompt' in data) && 'task_id' in data) {
+        ElMessage({
+          showClose: true,
+          message: "参数类型不正确！",
+          type: "error",
+        });
+        f = false;
+        return;
+      }
+    });
+  } else {
+    ElMessage({
+      showClose: true,
+      message: "请输入Array！",
+      type: "error",
+    });
+    f = false;
+    return;
+  }
+  if (!f) {
+    return;
+  }
   data.forEach(element => {
-    gengerateData.push({ task_id: element.task_id, result: element.prompt, entryPoint: element.entry_point });
+    generateData.push({ task_id: element.task_id, result: element.result ? element.result : [element.prompt] });
   });
   evalute({
     "datasetName": nps[0],
     "language": nps[1],
     "isTest": inp3.value,
-    "gengerateData": gengerateData
+    "generateData": generateData
   }).then((resp) => {
     let res = resp.data;
+
     ElMessage({
       showClose: true,
-      message: "请求成功！",
+      message: "结果已保存到evaluteResult.json",
       type: "success",
     });
+    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res, null, 2));
+    var downloadAnchor = document.createElement('a');
+    downloadAnchor.href = dataStr;
+    downloadAnchor.download = `evaluteResult.json`;
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    document.body.removeChild(downloadAnchor);
   })
 }
 onMounted(() => {
@@ -127,12 +177,16 @@ onMounted(() => {
       if (file.type.match('application/json')) {
         var reader = new FileReader();
         reader.onload = function (e) {
-          var jsonFile = JSON.parse(e.target.result);
+          var jsonFile = JSON.parse(e.target.result).generateData;
+          let generateData = []
+          jsonFile.forEach(element => {
+            generateData.push({ task_id: element.task_id, prompt: JSON.stringify(element.result) })
+          })
           console.log('解析后的JSON对象:', jsonFile);
           if (jsonFile instanceof Array) {
             let flag = true;
             jsonFile.forEach((element) => {
-              if (!('task_id' in element && 'prompt' in element && 'entry_point' in element)) {
+              if (!('task_id' in element && 'result' in element)) {
                 flag = false;
               }
             })
@@ -142,7 +196,7 @@ onMounted(() => {
                 message: "导入成功！",
                 type: "success",
               });
-              tableData.value = jsonFile;
+              tableData.value = generateData;
               return;
             }
           }

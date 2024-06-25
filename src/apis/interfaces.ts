@@ -3,7 +3,7 @@ export interface evaluteDTO {
   datasetName: string;
   language: string;
   isTest: number;
-  gengerateData: [
+  generateData: [
     {
       "task-id": string;
       result: string;
