@@ -145,11 +145,11 @@ function evaluteData() {
     });
     return;
   }
-  let generateData: any = [];
+  let generateData = [];
   let f = true;
   if ((data instanceof Array)) {
     data.forEach(element => {
-      if (!('result' in data || 'prompt' in data) && 'task_id' in data) {
+      if (!('result' in element || 'prompt' in element) && 'task_id' in element) {
         ElMessage({
           showClose: true,
           message: "参数类型不正确！",
@@ -252,18 +252,6 @@ onMounted(() => {
     }
   });
 })
-import { ElMessageBox } from 'element-plus'
-
-const open = () => {
-  ElMessageBox.confirm(
-    'proxy will permanently delete the file. Continue?',
-    'Warning',
-    {
-      confirmButtonText: 'OK',
-      type: 'warning',
-    }
-  )
-}
 </script>
 
 
