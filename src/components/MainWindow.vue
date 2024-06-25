@@ -207,7 +207,7 @@ onMounted(() => {
       if (file.type.match('application/json')) {
         var reader = new FileReader();
         reader.onload = function (e) {
-          var jsonFile = JSON.parse(e.target.result).generateData;
+          var jsonFile = JSON.parse(e.target.result);
           let generateData = []
           jsonFile.forEach(element => {
             generateData.push({ task_id: element.task_id, prompt: JSON.stringify(element.result) })
