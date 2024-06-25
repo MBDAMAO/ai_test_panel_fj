@@ -7,7 +7,7 @@ module.exports = defineConfig({
     open: true,
     proxy: {
       "/api1": {
-        target: "", //接口域名1
+        target: "http://159.138.147.88:8000/", //接口域名1
         changeOrigin: true,
         ws: true,
         secure: true,
@@ -16,7 +16,7 @@ module.exports = defineConfig({
         },
       },
       "/api2": {
-        target: "", //接口域名2
+        target: "http://159.138.147.88:8000/", //接口域名2
         changeOrigin: true,
         ws: true,
         secure: true,

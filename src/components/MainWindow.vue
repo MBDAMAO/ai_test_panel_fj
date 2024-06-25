@@ -1,26 +1,46 @@
 <template>
   <div class="container">
+    <el-dialog v-model="dialogTableVisible" title="Help" width="800">
+      <MD />
+    </el-dialog>
     <div class="card">
+      <el-icon class="icon" @click="dialogTableVisible = true">
+        <QuestionFilled />
+      </el-icon>
       <div class="left">
+        <p
+          style="font-size: 30px; position: absolute; top:20px;color:black;font-family: 'Times New Roman', Times, serif;">
+          QcEval</p>
+        <p
+          style="font-size: 20px;position: absolute; top:110px;color:black;font-family: 'Times New Roman', Times, serif;">
+          A Tool to Evaluate Code Generation
+          Models Quickly
+        </p>
+        <div class="fake" style="height: 15%;"></div>
         <p>Select Dataset and Language</p>
         <div class="param">
           <el-cascader :options="options" style="width: 100%;" v-model="nps" filterable />
         </div>
+        <div class="fake" style="height: 2%;"></div>
         <div class="param">
-          <el-input v-model="inp2" style="width: 100%" :autosize="{ minRows: 2, maxRows: 2 }" type="textarea"
+          <el-input v-model="inp2" style="width: 100%" :autosize="{ minRows: 2, maxRows: 18 }" type="textarea"
             placeholder="Please enter generateData when about to evaluate." />
         </div>
-        <div class="param">
-          <div class="download" @click="download()">Search</div>
-          <div class="fake" style="width: 10%;"></div>
-          <div class="download" @click="evaluteData()">Evalute</div>
-        </div>
-        <div class="download" @click="exportData()">Export</div>
         <div class="fake" style="height: 2%;"></div>
         <div class="input" onclick="hiddenFileInput.click()">Import</div>
+        <div class="fake" style="height: 2%;"></div>
+        <div class="param">
+          <button class="download" @click="download()" :disabled="isDisable" v-loading="loading">Search</button>
+          <div class="fake" style="width: 10%;"></div>
+          <button class="download" @click="evaluteData()" :disabled="isDisable" v-loading="loading">Evalute</button>
+        </div>
+        <div class="fake" style="height: 2%;"></div>
+        <div class="download" @click="exportData()">Export</div>
+        <div class="fake" style="height: 2%;"></div>
       </div>
     </div>
     <div class=" tablebox">
+      <el-button class="clearTable" type="primary" @click="clearTable()">Clear</el-button>
       <el-table :data="tableData" border stripe style="width: 100%; height: 100%;">
         <el-table-column prop="task_id" label="Task_id" width="180" />
         <el-table-column prop="entry_point" label="Entry_point" width="180" />
@@ -36,15 +56,18 @@
 <script lang="ts" setup>
 import { getDataSet, evalute } from "@/apis/interfaces"
 import { ElMessage } from "element-plus";
+import MD from "@/components/md"
 import { options } from "./options"
-import { ref, onMounted, reactive, onBeforeMount } from "vue"
-let inp1: any = null;
+import { ref, onMounted, reactive } from "vue"
 const inp2 = ref()
 let nps = reactive([])
 const tableData = ref()
 const inp3 = ref()
+let isDisable = ref(false)
 inp3.value = 0
-const inp4 = ref()
+function clearTable() {
+  tableData.value = []
+}
 function download() {
   console.log(nps, nps[0], nps[1], inp3.value)
   if (!(nps && nps[0] && nps[1] && inp3.value != null)) {
@@ -55,8 +78,12 @@ function download() {
     });
     return;
   }
+  loading.value = true
+  isDisable.value = true
   getDataSet(nps[0], nps[1], inp3.value).then((resp) => {
     let res = resp.data;
+    loading.value = false
+    isDisable.value = false
     if (!res || res.length == 0 || JSON.stringify(res) == "{}") {
       ElMessage({
         showClose: true,
@@ -90,6 +117,8 @@ function exportData() {
   downloadAnchor.click();
   document.body.removeChild(downloadAnchor);
 }
+let dialogTableVisible = ref(false)
+let loading = ref(false)
 function evaluteData() {
   let data = tableData.value;
   if (inp2.value != null) {
@@ -146,6 +175,8 @@ function evaluteData() {
   data.forEach(element => {
     generateData.push({ task_id: element.task_id, result: element.result ? element.result : [element.prompt] });
   });
+  loading.value = true
+  isDisable.value = true
   evalute({
     "datasetName": nps[0],
     "language": nps[1],
@@ -153,7 +184,8 @@ function evaluteData() {
     "generateData": generateData
   }).then((resp) => {
     let res = resp.data;
-
+    loading.value = false
+    isDisable.value = false
     ElMessage({
       showClose: true,
       message: "结果已保存到evaluteResult.json",
@@ -223,11 +255,24 @@ onMounted(() => {
     }
   });
 })
+import { ElMessageBox } from 'element-plus'
+
+const open = () => {
+  ElMessageBox.confirm(
+    'proxy will permanently delete the file. Continue?',
+    'Warning',
+    {
+      confirmButtonText: 'OK',
+      type: 'warning',
+    }
+  )
+}
 </script>
 
 
 <style scoped>
 .download {
+  border: 0;
   cursor: pointer;
   color: white;
   display: flex;
@@ -237,6 +282,16 @@ onMounted(() => {
   width: 100%;
   border-radius: 8PX;
   background-color: RGB(85, 61, 233);
+}
+
+.icon {
+  position: absolute;
+  z-index: 1;
+  left: 20px;
+  top: 20px;
+  height: 20px;
+  width: 20px;
+  cursor: pointer;
 }
 
 .input {
@@ -252,6 +307,7 @@ onMounted(() => {
 }
 
 .card {
+  position: relative;
   color: rgb(76, 86, 100);
   font-size: 13px;
   display: flex;
@@ -264,9 +320,10 @@ onMounted(() => {
 }
 
 .tablebox {
-  border-radius: 50px;
   height: 800px;
   background-color: white;
+  display: flex;
+  flex-direction: column;
   width: 60%;
 }
 
@@ -300,10 +357,10 @@ onMounted(() => {
 
 .param {
   justify-content: space-between;
-  height: 60px;
   width: 100%;
   display: flex;
   justify-items: center;
+  align-items: center;
 }
 
 .tishi {
@@ -328,6 +385,14 @@ onMounted(() => {
   width: 50%;
   display: flex;
   flex-direction: column;
+}
+
+.clearTable {
+  border-radius: 0;
+  background-color: rgb(95, 51, 232);
+  height: 20px;
+  border: 0;
+  /* width: 200px; */
 }
 
 .evalutes {}
