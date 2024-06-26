@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ElMessage } from "element-plus";
-axios.defaults.timeout = 10000000; // 超时时间
-axios.defaults.baseURL = "http://127.0.0.1:8080/"; // http://127.0.0.1:4523/m1/3898618-0-default"; //"http://127.0.0.1:8080";
+axios.defaults.timeout = 10000000;
+axios.defaults.baseURL = "http://192.168.1.7:8080/";
 // 数据格式转换
 axios.defaults.transformRequest = function (data) {
   data = JSON.stringify(data);
