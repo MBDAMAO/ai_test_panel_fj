@@ -4,8 +4,8 @@
       <MD />
     </el-dialog>
     <div class="card">
-      <el-icon class="icon" @click="dialogTableVisible = true">
-        <QuestionFilled />
+      <el-icon class="icon">
+        <QuestionFilled @click="dialogTableVisible = true" style="height: 50px; width: 50px;" />
       </el-icon>
       <div class="left">
         <p
@@ -312,16 +312,6 @@ onMounted(() => {
   width: 60%;
 }
 
-.inp {
-  height: 100%;
-  width: 300px;
-  padding: 0 0 0 15px;
-  margin-top: 10px;
-  border: 0;
-  background-color: rgba(190, 190, 190, 0.3);
-  border-radius: 10px;
-  color: rgb(255, 255, 255, 1);
-}
 
 .container {
   height: 100%;
@@ -348,14 +338,6 @@ onMounted(() => {
   align-items: center;
 }
 
-.tishi {
-  height: 100%;
-  width: 100px;
-  display: flex;
-  justify-items: center;
-  align-items: center;
-}
-
 .left {
   height: 100%;
   display: flex;
@@ -365,13 +347,6 @@ onMounted(() => {
   align-items: center;
 }
 
-.right {
-  height: 100%;
-  width: 50%;
-  display: flex;
-  flex-direction: column;
-}
-
 .clearTable {
   border-radius: 0;
   background-color: rgb(95, 51, 232);
@@ -379,6 +354,4 @@ onMounted(() => {
   border: 0;
   /* width: 200px; */
 }
-
-.evalutes {}
 </style>
